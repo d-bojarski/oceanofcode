@@ -1,0 +1,2 @@
+add_subdirectory(oceanofcode)
+add_subdirectory(oceanofcode-ai)

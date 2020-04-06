@@ -1,0 +1,18 @@
+<RCC>
+    <qresource prefix="/images">
+        <file alias="background.jpg">resources/images/background.jpg</file>
+        <file alias="11x0x0x1.png">resources/images/11x0x0x1.png</file>
+        <file alias="11x0x111.png">resources/images/11x0x111.png</file>
+        <file alias="1111x0x1.png">resources/images/1111x0x1.png</file>
+        <file alias="01111111.png">resources/images/01111111.png</file>
+        <file alias="11011111.png">resources/images/11011111.png</file>
+        <file alias="11110111.png">resources/images/11110111.png</file>
+        <file alias="11111101.png">resources/images/11111101.png</file>
+        <file alias="11111111.png">resources/images/11111111.png</file>
+        <file alias="x0x0x111.png">resources/images/x0x0x111.png</file>
+        <file alias="x0x111x0.png">resources/images/x0x111x0.png</file>
+        <file alias="x0x11111.png">resources/images/x0x11111.png</file>
+        <file alias="x111x0x0.png">resources/images/x111x0x0.png</file>
+        <file alias="x11111x0.png">resources/images/x11111x0.png</file>
+    </qresource>
+</RCC>
