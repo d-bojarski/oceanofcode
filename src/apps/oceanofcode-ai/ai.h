@@ -1,12 +1,13 @@
 #pragma once
 
+#include "messagemanager.h"
 #include "player.h"
 #include "grid.h"
 
 class AI
 {
 public:
-	AI();
+	AI(const MessageManager& messageManager);
 	~AI();
 
 	void start();
@@ -18,6 +19,7 @@ public:
 	void calculateOptimalPath();
 
 private:
+	MessageManager messageManager;
 	Player me;
 	Player opponent;
 
@@ -29,6 +31,5 @@ private:
 
 	// Grid with path already used
 	Grid gridUsedPath;
-
 };
 

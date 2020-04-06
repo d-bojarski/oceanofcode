@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ai.h"
+#include "messagemanager.h"
 
 #include <qobject.h>
 
@@ -11,13 +12,13 @@ public:
 	AIWorker(QObject *parent = nullptr);
 	~AIWorker();
 
-
-//public slots:
+public slots:
 	void process();
-//signals:
-//	void finished();
 
+signals:
+	void finished();
 
 public:
+	MessageManager messageManager;
 	AI ai;
 };

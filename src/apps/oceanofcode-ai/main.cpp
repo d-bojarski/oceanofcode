@@ -1,7 +1,9 @@
 #include "ai.h"
+#include "messagemanager.h"
 
 int main()
 {
-    AI ai;
+    MessageManager messageManager;
+    AI ai(messageManager);
     ai.start();
 }

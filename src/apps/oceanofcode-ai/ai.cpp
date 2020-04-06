@@ -8,7 +8,8 @@
 //---------------------------------------
 //------- Constructors/Destructors ------
 //---------------------------------------
-AI::AI() :
+AI::AI(const MessageManager& messageManager) :
+	messageManager(messageManager),
 	me(),
 	opponent(),
 	grid()
@@ -24,7 +25,10 @@ AI::~AI()
 //---------------------------------------
 void AI::start()
 {
-	std::cin >> grid.width;
+	std::cout << "AI::start" << std::endl;
+	messageManager.read(&grid.width);
+	std::cout << "width:" << grid.width << std::endl;
+	//std::cin >> grid.width;
 	std::cin >> grid.height;
 	std::cin >> me.id;
 	std::cin.ignore();
