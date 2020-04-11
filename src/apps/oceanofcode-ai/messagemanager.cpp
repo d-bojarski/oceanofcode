@@ -29,7 +29,7 @@ void MessageManager::send(const std::string& value)
 	if (!_clientReady)
 	{
 		_waitCondition.wait(&_mutex);
-}
+	}
 	_clientReady = false;
 	_mutex.unlock();
 
@@ -38,6 +38,8 @@ void MessageManager::send(const std::string& value)
 	//qDebug() << "Send" << value;
 	_mutex.unlock();
 	_waitCondition.wakeAll();
+#else
+	std::cout << value << std::endl;
 #endif
 }
 
@@ -47,6 +49,7 @@ void MessageManager::send(const int value)
 	_mutex.lock();
 	if (!_clientReady)
 	{
+		//qDebug() << "Client not ready";
 		_waitCondition.wait(&_mutex);
 	}
 	_clientReady = false;
@@ -68,11 +71,10 @@ void MessageManager::read(std::string* value)
 	_mutex.unlock();
 	_waitCondition.wakeAll();
 
-
 	_mutex.lock();
 	_waitCondition.wait(&_mutex);
 	*value = _valueString;
-	//qDebug() << "Read" << *value;
+	//qDebug() << "Read" << QString::fromStdString(*value);
 	_mutex.unlock();
 #else
 	std::getline(std::cin, *value);
@@ -83,12 +85,14 @@ void MessageManager::read(int* value)
 {
 #ifdef LIBRARY
 	_mutex.lock();
+	//qDebug() << "Client ready";
 	_clientReady = true;
 	_mutex.unlock();
 	_waitCondition.wakeAll();
 
 
 	_mutex.lock();
+	//qDebug() << "Client wait";
 	_waitCondition.wait(&_mutex);
 	*value = _valueInt;
 	//qDebug() << "Read" << *value;
@@ -103,15 +107,6 @@ void MessageManager::readIgnore()
 #ifdef LIBRARY
 #else
 	std::cin.ignore();
-#endif
-}
-
-void MessageManager::write(const std::string& message)
-{
-#ifdef LIBRARY
-	qDebug() << QString::fromStdString(message);
-#else
-	std::cout << message << std::endl;
 #endif
 }
 

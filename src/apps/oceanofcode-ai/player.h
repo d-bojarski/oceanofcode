@@ -4,6 +4,13 @@ class Player
 {
 public:
 	Player();
+	Player(
+		int id,
+		int life,
+		int torpedoCooldown,
+		int sonarCooldown,
+		int silenceCooldown,
+		int mineCooldown);
 	~Player();
 
 

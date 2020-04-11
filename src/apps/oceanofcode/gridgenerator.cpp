@@ -146,5 +146,11 @@ std::vector<Tile> GridGenerator::generateTiles(Grid& grid)
 		}
 	}
 
+	if (!stop)
+	{
+		// Java source code use another coordinate system.
+		grid.inverse();
+	}
+
 	return tileSprites;
 }

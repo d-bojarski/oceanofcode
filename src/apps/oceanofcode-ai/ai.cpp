@@ -26,6 +26,7 @@ AI::~AI()
 void AI::start()
 {
 	messageManager->debug("AI::start");
+
 	messageManager->read(&grid.width);
 	messageManager->read(&grid.height);
 	messageManager->read(&me.id);
@@ -41,36 +42,46 @@ void AI::start()
 	{
 		std::string line;
 		messageManager->read(&line);
-		messageManager->debug("line: " + std::to_string(h) + line);
 		grid.fill(h, line);
+		//messageManager->debug("line: " + std::to_string(h) + line);
 	}
-	//grid.show();
 
 	//calculateGridAccess();
 
-	//grid.show();
-
-	std::cout << "7 7" << std::endl;
+	messageManager->send("7 7");
 
 	// game loop
 	while (1)
 	{
-		std::cin >> me.x;
-		std::cin >> me.y;
-		std::cin >> me.life;
-		std::cin >> opponent.life;
-		std::cin >> me.torpedoCooldown;
-		std::cin >> me.sonarCooldown;
-		std::cin >> me.silenceCooldown;
-		std::cin >> me.mineCooldown;
-		std::cin.ignore();
+		messageManager->read(&me.x);
+		messageManager->read(&me.y);
+		messageManager->read(&me.life);
+		messageManager->read(&opponent.life);
+		messageManager->read(&me.torpedoCooldown);
+		messageManager->read(&me.sonarCooldown);
+		messageManager->read(&me.silenceCooldown);
+		messageManager->read(&me.mineCooldown);
+		messageManager->readIgnore();
+		//std::cin >> me.x;
+		//std::cin >> me.y;
+		//std::cin >> me.life;
+		//std::cin >> opponent.life;
+		//std::cin >> me.torpedoCooldown;
+		//std::cin >> me.sonarCooldown;
+		//std::cin >> me.silenceCooldown;
+		//std::cin >> me.mineCooldown;
+		//std::cin.ignore();
 
 
 		std::string sonarResult;
-		std::cin >> sonarResult;
-		std::cin.ignore();
+		messageManager->read(&sonarResult);
+		messageManager->readIgnore();
+		//std::cin >> sonarResult;
+		//std::cin.ignore();
+
 		std::string opponentOrders;
-		std::getline(std::cin, opponentOrders);
+		//std::getline(std::cin, opponentOrders);
+		messageManager->read(&opponentOrders);
 
 		// TODO use sonar
 		//std::cerr << "sonarResult" << sonarResult << std::endl;
@@ -82,9 +93,8 @@ void AI::start()
 
 
 
-
-
-		std::cout << "MOVE N TORPEDO" << std::endl;
+		messageManager->send("MOVE N TORPEDO");
+		//std::cout << "MOVE N TORPEDO" << std::endl;
 	}
 }
 

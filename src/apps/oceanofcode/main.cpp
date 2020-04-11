@@ -15,8 +15,6 @@ int main(int argc, char* argv[])
 	GridGenerator generator(15);
 	generator.generate();
 
-	generator.grid.show();
-
 	View view;
 	view.fillGround(generator.grid, generator.tiles);
 	view.show();

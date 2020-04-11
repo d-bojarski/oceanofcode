@@ -3,6 +3,7 @@
 #include "aiworker.h"
 #include "messagemanager.h"
 #include "grid.h"
+#include "player.h"
 
 #include <qobject.h>
 
@@ -25,9 +26,13 @@ signals:
 
 private:
 	void initializePlayer(int id);
+	void play(int id, const std::string& opponentOrders, std::string& playerOrders);
 
 public:
 	MessageManager* messageManagerPlayer0;
 	MessageManager* messageManagerPlayer1;
 	const Grid& grid;
+
+	Player player0;
+	Player player1;
 };

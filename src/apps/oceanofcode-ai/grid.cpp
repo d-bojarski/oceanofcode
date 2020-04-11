@@ -1,6 +1,7 @@
 #include "grid.h"
 
 #include <iostream>
+#include <algorithm>
 
 //---------------------------------------
 //------- Constructors/Destructors ------
@@ -41,7 +42,7 @@ void Grid::initialize()
 	}
 }
 
-void Grid::show()
+void Grid::show() const
 {
 	std::string output;
 	output.append("GRID:\n");
@@ -89,6 +90,19 @@ void Grid::reverse()
 		for (int w = 0; w < width; w++)
 		{
 			boxes[h][w] = (boxes[h][w] == 1 ? 0 : 1);
+		}
+	}
+}
+
+void Grid::inverse()
+{
+	// Inverse x and y.
+	Grid copy(*this);
+	for (int h = 0; h < std::min(height, width); h++)
+	{
+		for (int w = 0; w < std::min(height, width); w++)
+		{
+			boxes[h][w] = copy[w][h];
 		}
 	}
 }

@@ -54,37 +54,34 @@ void View::fillGround(const Grid& grid, const std::vector<Tile>& tiles)
 		{
 			int horizontalBoxSize = groundBoxSize(xGrid);
 
-			if (grid[xGrid][yGrid] == 1)
-			{
-				// Search groud image.
-				auto tile = std::find_if(tiles.begin(), tiles.end(), TileComparator(xGrid, yGrid));
+			// Search groud image.
+			auto tile = std::find_if(tiles.begin(), tiles.end(), TileComparator(xGrid, yGrid));
 
-				if (tile != tiles.end())
-				{
-					painter.begin(&backgroundImage);
-					QRect r(x, y, horizontalBoxSize, verticalBoxSize);
-					painter.drawImage(r, QImage(QStringLiteral(":/images/%1").arg(tile->imageName)));
+			if (tile != tiles.end())
+			{
+				painter.begin(&backgroundImage);
+				QRect r(x, y, horizontalBoxSize, verticalBoxSize);
+				painter.drawImage(r, QImage(QStringLiteral(":/images/%1").arg(tile->imageName)));
 
 #if 0
-					painter.setBrush(Qt::black);
-					QPen pen;
-					pen.setColor(Qt::black);
-					pen.setWidth(1);
-					painter.setPen(pen);
-					QFont font = painter.font();
-					font.setPointSize(12);
-					painter.setFont(font);
-					painter.drawText(r, Qt::AlignCenter,
-						QStringLiteral("%1,%2\n%3x%4")
-						.arg(x)
-						.arg(y)
-						.arg(horizontalBoxSize - 1)
-						.arg(verticalBoxSize - 1)
-						);
+				painter.setBrush(Qt::black);
+				QPen pen;
+				pen.setColor(Qt::black);
+				pen.setWidth(1);
+				painter.setPen(pen);
+				QFont font = painter.font();
+				font.setPointSize(12);
+				painter.setFont(font);
+				painter.drawText(r, Qt::AlignCenter,
+					QStringLiteral("%1,%2\n%3x%4")
+					.arg(x)
+					.arg(y)
+					.arg(horizontalBoxSize - 1)
+					.arg(verticalBoxSize - 1)
+					);
 #endif
 
-					painter.end();
-				}
+				painter.end();
 			}
 			x += horizontalBoxSize + groundMargin(xGrid);
 		}

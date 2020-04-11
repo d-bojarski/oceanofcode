@@ -11,7 +11,7 @@ public:
 
 	void initialize();
 
-	void show();
+	void show() const;
 
 	// Fill ground position.
 	void fill(int lineNumber, const std::string& lineValue);
@@ -20,6 +20,7 @@ public:
 
 	void emptyCopy(const Grid& source);
 	void reverse();
+	void inverse();
 
 	short* operator[](int index) const;
 	void operator=(const Grid& grid);

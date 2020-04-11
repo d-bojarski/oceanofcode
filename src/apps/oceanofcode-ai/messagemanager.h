@@ -24,7 +24,6 @@ public:
 	void read(int* value);
 	void readIgnore();
 
-	void write(const std::string& message);
 	void debug(const std::string& message);
 
 #ifdef LIBRARY
