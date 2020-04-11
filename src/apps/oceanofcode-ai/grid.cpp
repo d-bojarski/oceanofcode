@@ -19,7 +19,8 @@ Grid::Grid(const Grid& grid)
 
 Grid::~Grid()
 {
-	if (boxes != nullptr) {
+	if (boxes != nullptr)
+	{
 		for (size_t i = 0; i < height; i++)
 		{
 			delete boxes[i];
@@ -36,7 +37,7 @@ void Grid::initialize()
 	boxes = new short* [height];
 	for (int i = 0; i < height; i++)
 	{
-		boxes[i] = new short[width] {0};
+		boxes[i] = new short[width] { 0 };
 	}
 }
 
@@ -53,6 +54,24 @@ void Grid::show()
 		output.append("\n");
 	}
 	std::cerr << output;
+}
+
+void Grid::fill(int lineNumber, const std::string& lineValue)
+{
+	for (int w = 0; w < lineValue.size(); w++)
+	{
+		boxes[lineNumber][w] = (lineValue.at(w) == 'x') ? 1 : 0;
+	}
+}
+
+std::string Grid::toLine(int lineNumber) const
+{
+	std::string line;
+	for (int w = 0; w < width; w++)
+	{
+		line.append((boxes[lineNumber][w] == 1) ? "x" : ".");
+	}
+	return line;
 }
 
 void Grid::emptyCopy(const Grid& source)

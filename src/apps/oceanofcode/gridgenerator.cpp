@@ -28,42 +28,44 @@ void GridGenerator::generate()
 
 	int max = 5 + std::rand() / ((RAND_MAX + 1u) / 26);
 	// Create random islands.
-	for (int i = 0; i < max; i++) {
+	for (int i = 0; i < max; i++)
+	{
 
 		int x = std::rand() / ((RAND_MAX + 1u) / 15);
 		int y = std::rand() / ((RAND_MAX + 1u) / 15);
 
-		result[x][y] = 1;
+		result[y][x] = 1;
 	}
 
 	grid = result;
 
 	// increase the island tiles
-	for (int x = 0; x < gridSize; x++)
+	for (int y = 0; y < gridSize; y++)
 	{
-		for (int y = 0; y < gridSize; y++)
+		for (int x = 0; x < gridSize; x++)
 		{
-			if (result[x][y])
+			if (result[y][x])
 			{
-				if (y - 1 >= 0)
+				if (x - 1 >= 0)
 				{
-					grid[x][y - 1] = 1;
+					grid[y][x - 1] = 1;
 				}
 
-				if (x + 1 < gridSize)
+				if (y + 1 < gridSize)
 				{
-					grid[x + 1][y] = 1;
+					grid[y + 1][x] = 1;
 
-					if (y - 1 >= 0)
+					if (x - 1 >= 0)
 					{
-						grid[x + 1][y - 1] = 1;
+						grid[y + 1][x - 1] = 1;
 					}
 				}
 			}
 		}
 	}
 
-	do {
+	do
+	{
 		tiles = generateTiles(grid);
 	} while (tiles.empty());
 }
@@ -80,21 +82,21 @@ std::vector<Tile> GridGenerator::generateTiles(Grid& grid)
 		".0.111.0",
 		"1111.0.1",
 		".0.11111",
-		"11111111", 
+		"11111111",
 		"11111101",
-		"11110111", 
-		"11011111", 
+		"11110111",
+		"11011111",
 		"01111111"
 	};
 
 	std::vector<Tile> tileSprites;
 	bool stop = false;
 
-	for (int x = 0; x < gridSize && !stop; x++)
+	for (int y = 0; y < gridSize && !stop; y++)
 	{
-		for (int y = 0; y < gridSize && !stop; y++)
+		for (int x = 0; x < gridSize && !stop; x++)
 		{
-			bool island = (grid[x][y] == 1);
+			bool island = (grid[y][x] == 1);
 
 			if (!island)
 			{
@@ -103,14 +105,14 @@ std::vector<Tile> GridGenerator::generateTiles(Grid& grid)
 
 			// Create tile.
 			QString tile;
-			tile.append(y - 1 < 0 || x - 1 < 0 || grid[x - 1][y - 1] ? "1" : "0");
-			tile.append(y - 1 < 0 || grid[x][y - 1] ? "1" : "0");
-			tile.append(y - 1 < 0 || x + 1 >= gridSize || grid[x + 1][y - 1] ? "1" : "0");
-			tile.append(x + 1 >= gridSize || grid[x + 1][y] ? "1" : "0");
-			tile.append(y + 1 >= gridSize || x + 1 >= gridSize || grid[x + 1][y + 1] ? "1" : "0");
-			tile.append(y + 1 >= gridSize || grid[x][y + 1] ? "1" : "0");
-			tile.append(y + 1 >= gridSize || x - 1 < 0 || grid[x - 1][y + 1] ? "1" : "0");
-			tile.append(x - 1 < 0 || grid[x - 1][y] ? "1" : "0");
+			tile.append(x - 1 < 0 || y - 1 < 0 || grid[y - 1][x - 1] ? "1" : "0");
+			tile.append(x - 1 < 0 || grid[y][x - 1] ? "1" : "0");
+			tile.append(x - 1 < 0 || y + 1 >= gridSize || grid[y + 1][x - 1] ? "1" : "0");
+			tile.append(y + 1 >= gridSize || grid[y + 1][x] ? "1" : "0");
+			tile.append(x + 1 >= gridSize || y + 1 >= gridSize || grid[y + 1][x + 1] ? "1" : "0");
+			tile.append(x + 1 >= gridSize || grid[y][x + 1] ? "1" : "0");
+			tile.append(x + 1 >= gridSize || y - 1 < 0 || grid[y - 1][x + 1] ? "1" : "0");
+			tile.append(y - 1 < 0 || grid[y - 1][x] ? "1" : "0");
 
 			QString sprite;
 			for (int i = 0; i < tiles.size(); i++)
@@ -121,7 +123,7 @@ std::vector<Tile> GridGenerator::generateTiles(Grid& grid)
 					tile = tile.replace(".", "x");
 
 					sprite = tile + ".png";
-					tileSprites.push_back({ x, y, sprite });
+					tileSprites.push_back({ y, x, sprite });
 					break;
 				}
 			}
@@ -129,14 +131,14 @@ std::vector<Tile> GridGenerator::generateTiles(Grid& grid)
 			if (sprite.isEmpty())
 			{
 				// fix error
-				grid[std::max(x - 1, 0)][std::max(0, y - 1)] = 1;
-				grid[x][std::max(0, y - 1)] = 1;
-				grid[std::min(x + 1, gridSize - 1)][std::max(0, y - 1)] = 1;
-				grid[std::max(x - 1, 0)][std::max(0, y)] = 1;
-				grid[std::min(x + 1, gridSize - 1)][std::max(0, y)] = 1;
-				grid[std::max(x - 1, 0)][std::min(y + 1, gridSize - 1)] = 1;
-				grid[x][std::min(y + 1, gridSize - 1)] = 1;
-				grid[std::min(x + 1, gridSize - 1)][std::min(y + 1, gridSize - 1)] = 1;
+				grid[std::max(y - 1, 0)][std::max(0, x - 1)] = 1;
+				grid[y][std::max(0, x - 1)] = 1;
+				grid[std::min(y + 1, gridSize - 1)][std::max(0, x - 1)] = 1;
+				grid[std::max(y - 1, 0)][std::max(0, x)] = 1;
+				grid[std::min(y + 1, gridSize - 1)][std::max(0, x)] = 1;
+				grid[std::max(y - 1, 0)][std::min(x + 1, gridSize - 1)] = 1;
+				grid[y][std::min(x + 1, gridSize - 1)] = 1;
+				grid[std::min(y + 1, gridSize - 1)][std::min(x + 1, gridSize - 1)] = 1;
 
 				tileSprites.clear();
 				stop = true;

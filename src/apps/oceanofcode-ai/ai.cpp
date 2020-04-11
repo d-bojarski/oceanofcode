@@ -8,7 +8,7 @@
 //---------------------------------------
 //------- Constructors/Destructors ------
 //---------------------------------------
-AI::AI(const MessageManager& messageManager) :
+AI::AI(MessageManager* messageManager) :
 	messageManager(messageManager),
 	me(),
 	opponent(),
@@ -25,27 +25,30 @@ AI::~AI()
 //---------------------------------------
 void AI::start()
 {
-	std::cout << "AI::start" << std::endl;
-	messageManager.read(&grid.width);
-	std::cout << "width:" << grid.width << std::endl;
-	//std::cin >> grid.width;
-	std::cin >> grid.height;
-	std::cin >> me.id;
-	std::cin.ignore();
+	messageManager->debug("AI::start");
+	messageManager->read(&grid.width);
+	messageManager->read(&grid.height);
+	messageManager->read(&me.id);
+	messageManager->readIgnore();
+
+	messageManager->debug("width: " + std::to_string(grid.width));
+	messageManager->debug("height: " + std::to_string(grid.height));
+	messageManager->debug("me.id: " + std::to_string(me.id));
 
 	grid.initialize();
 
 	for (int h = 0; h < grid.height; h++)
 	{
 		std::string line;
-		std::getline(std::cin, line);
-		fill(grid[h], line);
+		messageManager->read(&line);
+		messageManager->debug("line: " + std::to_string(h) + line);
+		grid.fill(h, line);
 	}
-	grid.show();
+	//grid.show();
 
-	calculateGridAccess();
+	//calculateGridAccess();
 
-	grid.show();
+	//grid.show();
 
 	std::cout << "7 7" << std::endl;
 
@@ -82,14 +85,6 @@ void AI::start()
 
 
 		std::cout << "MOVE N TORPEDO" << std::endl;
-	}
-}
-
-void AI::fill(short* line, const std::string& lineValue)
-{
-	for (int w = 0; w < lineValue.size(); w++)
-	{
-		line[w] = (lineValue.at(w) == 'x') ? 1 : 0;
 	}
 }
 

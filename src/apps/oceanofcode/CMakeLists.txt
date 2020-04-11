@@ -2,9 +2,8 @@ file(GLOB SOURCES
     *.h
     *.cpp
     oceanofcode.qrc
-    #../oceanofcode-ia/grid.cpp
 )
-add_compile_definitions(LIBRARY)
+add_definitions(-DLIBRARY)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)

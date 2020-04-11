@@ -7,19 +7,17 @@
 class AI
 {
 public:
-	AI(const MessageManager& messageManager);
+	AI(MessageManager* messageManager);
 	~AI();
 
 	void start();
 
-	// Fill ground position.
-	void fill(short* line, const std::string& lineValue);
 	void calculateGridAccess();
 
 	void calculateOptimalPath();
 
 private:
-	MessageManager messageManager;
+	MessageManager* messageManager;
 	Player me;
 	Player opponent;
 

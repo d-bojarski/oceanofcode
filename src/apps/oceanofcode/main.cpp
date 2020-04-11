@@ -1,6 +1,7 @@
 #include "gridgenerator.h"
 #include "view.h"
 #include "aiworker.h"
+#include "gameworker.h"
 
 #include <iostream>
 
@@ -14,21 +15,36 @@ int main(int argc, char* argv[])
 	GridGenerator generator(15);
 	generator.generate();
 
+	generator.grid.show();
+
 	View view;
 	view.fillGround(generator.grid, generator.tiles);
 	view.show();
 
-	QThread* thread = new QThread;
-	AIWorker worker;
-	worker.moveToThread(thread);
+	QThread* threadPlayer0 = new QThread;
+	AIWorker workerPlayer0;
+	workerPlayer0.moveToThread(threadPlayer0);
+	QObject::connect(threadPlayer0, &QThread::started, &workerPlayer0, &AIWorker::process);
+	QObject::connect(&workerPlayer0, SIGNAL(finished()), threadPlayer0, SLOT(quit()));
+	QObject::connect(threadPlayer0, SIGNAL(finished()), threadPlayer0, SLOT(deleteLater()));
 
-	QObject::connect(thread, &QThread::started, &worker, &AIWorker::process);
-	QObject::connect(&worker, SIGNAL(finished()), thread, SLOT(quit()));
-	QObject::connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
-	thread->start();
+	QThread* threadPlayer1 = new QThread;
+	AIWorker workerPlayer1;
+	workerPlayer1.moveToThread(threadPlayer1);
+	QObject::connect(threadPlayer1, &QThread::started, &workerPlayer1, &AIWorker::process);
+	QObject::connect(&workerPlayer1, SIGNAL(finished()), threadPlayer1, SLOT(quit()));
+	QObject::connect(threadPlayer1, SIGNAL(finished()), threadPlayer1, SLOT(deleteLater()));
 
-	QThread::msleep(100);
-	worker.messageManager.send(40);
+	QThread* gameWorkerThread = new QThread;
+	GameWorker gameWorker(&workerPlayer0.messageManager, &workerPlayer1.messageManager, generator.grid);
+	gameWorker.moveToThread(gameWorkerThread);
+	QObject::connect(gameWorkerThread, &QThread::started, &gameWorker, &GameWorker::process);
+	QObject::connect(&gameWorker, SIGNAL(finished()), gameWorkerThread, SLOT(quit()));
+	QObject::connect(gameWorkerThread, SIGNAL(finished()), gameWorkerThread, SLOT(deleteLater()));
+
+	threadPlayer0->start();
+	threadPlayer1->start();
+	gameWorkerThread->start();
 
 	app.exec();
 }

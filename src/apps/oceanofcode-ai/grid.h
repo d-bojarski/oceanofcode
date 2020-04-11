@@ -13,6 +13,11 @@ public:
 
 	void show();
 
+	// Fill ground position.
+	void fill(int lineNumber, const std::string& lineValue);
+	std::string toLine(int lineNumber) const;
+
+
 	void emptyCopy(const Grid& source);
 	void reverse();
 

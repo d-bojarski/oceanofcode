@@ -1,11 +1,11 @@
 #include "aiworker.h"
 
-#include <iostream>
+#include <qdebug.h>
 
 AIWorker::AIWorker(QObject* parent) :
     QObject(parent),
     messageManager(),
-    ai(messageManager)
+    ai(&messageManager)
 {
 }
 
@@ -15,8 +15,8 @@ AIWorker::~AIWorker()
 
 void AIWorker::process()
 {
-    std::cout << "AIWorker::process" << std::endl;
+    qDebug() << "AIWorker::process";
     ai.start();
-    std::cout << "finished" << std::endl;
+    qDebug() << "finished";
     emit finished();
 }
