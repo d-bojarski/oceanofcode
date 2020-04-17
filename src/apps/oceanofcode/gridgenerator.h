@@ -19,6 +19,7 @@ public:
 
 public:
 	const int gridSize;
+	unsigned int seed;
 	Grid grid;
 	std::vector<Tile> tiles;
 };

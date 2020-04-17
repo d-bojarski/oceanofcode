@@ -8,7 +8,10 @@
 #include <qregexp.h>
 
 GridGenerator::GridGenerator(int gridSize) :
-	gridSize(gridSize)
+	gridSize(gridSize),
+	seed(0),
+	grid(),
+	tiles()
 {
 }
 
@@ -23,7 +26,14 @@ void GridGenerator::generate()
 	result.height = gridSize;
 	result.initialize();
 
-	std::srand(static_cast<unsigned int>(std::time(nullptr)));
+	if (seed != 0)
+	{
+		std::srand(seed);
+	}
+	else
+	{
+		std::srand(static_cast<unsigned int>(std::time(nullptr)));
+	}
 	std::rand();
 
 	int max = 5 + std::rand() / ((RAND_MAX + 1u) / 26);

@@ -11,12 +11,13 @@ AIWorker::AIWorker(QObject* parent) :
 
 AIWorker::~AIWorker()
 {
+    ai.stop();
 }
 
 void AIWorker::process()
 {
     qDebug() << "AIWorker::process";
     ai.start();
-    qDebug() << "finished";
+    qDebug() << "AIWorker::finished";
     emit finished();
 }

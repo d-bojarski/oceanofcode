@@ -5,14 +5,16 @@
 #include <vector>
 #include <algorithm>
 
+
 //---------------------------------------
 //------- Constructors/Destructors ------
 //---------------------------------------
-AI::AI(MessageManager* messageManager) :
-	messageManager(messageManager),
-	me(),
-	opponent(),
-	grid()
+AI::AI(MessageManager* _messageManager) :
+	_messageManager(_messageManager),
+	_stop(false),
+	_me(),
+	_opponent(),
+	_grid()
 {
 }
 
@@ -25,63 +27,66 @@ AI::~AI()
 //---------------------------------------
 void AI::start()
 {
-	messageManager->debug("AI::start");
+	_messageManager->debug("AI::start");
 
-	messageManager->read(&grid.width);
-	messageManager->read(&grid.height);
-	messageManager->read(&me.id);
-	messageManager->readIgnore();
+	_messageManager->read(&_grid.width);
+	_messageManager->read(&_grid.height);
+	_messageManager->read(&_me.id);
+	_messageManager->readIgnore();
 
-	messageManager->debug("width: " + std::to_string(grid.width));
-	messageManager->debug("height: " + std::to_string(grid.height));
-	messageManager->debug("me.id: " + std::to_string(me.id));
+	_messageManager->debug("width: " + std::to_string(_grid.width));
+	_messageManager->debug("height: " + std::to_string(_grid.height));
+	_messageManager->debug("_me.id: " + std::to_string(_me.id));
 
-	grid.initialize();
+	_grid.initialize();
 
-	for (int h = 0; h < grid.height; h++)
+	for (int h = 0; h < _grid.height; h++)
 	{
 		std::string line;
-		messageManager->read(&line);
-		grid.fill(h, line);
+		_messageManager->read(&line);
+		_grid.fill(h, line);
 		//messageManager->debug("line: " + std::to_string(h) + line);
 	}
 
-	//calculateGridAccess();
+	calculateGridAccess();
+	calculatePaths();
 
-	messageManager->send("7 7");
-
-	// game loop
-	while (1)
+	_messageManager->snapshot("grid-access-" + std::to_string(_me.id), _gridAccess);
+	for (int i = 0; i < _gridPaths.size(); i++)
 	{
-		messageManager->read(&me.x);
-		messageManager->read(&me.y);
-		messageManager->read(&me.life);
-		messageManager->read(&opponent.life);
-		messageManager->read(&me.torpedoCooldown);
-		messageManager->read(&me.sonarCooldown);
-		messageManager->read(&me.silenceCooldown);
-		messageManager->read(&me.mineCooldown);
-		messageManager->readIgnore();
-		//std::cin >> me.x;
-		//std::cin >> me.y;
-		//std::cin >> me.life;
-		//std::cin >> opponent.life;
-		//std::cin >> me.torpedoCooldown;
-		//std::cin >> me.sonarCooldown;
-		//std::cin >> me.silenceCooldown;
-		//std::cin >> me.mineCooldown;
-		//std::cin.ignore();
+		_messageManager->snapshot("grid-path-" + std::to_string(_me.id) + "-" + std::to_string(i), _gridPaths.at(i));
+	}
+
+	_messageManager->send("7 7");
+
+	bool run = true;
+	// game loop
+	do
+	{
+#ifdef LIBRARY
+		_mutex.lock();
+		run = !_stop;
+		_mutex.unlock();
+#endif
+
+		//_messageManager->debug("run " + std::string(run ? "true" : "false"));
+		run = run && _messageManager->read(&_me.x);
+		run = run && _messageManager->read(&_me.y);
+		run = run && _messageManager->read(&_me.life);
+		run = run && _messageManager->read(&_opponent.life);
+		run = run && _messageManager->read(&_me.torpedoCooldown);
+		run = run && _messageManager->read(&_me.sonarCooldown);
+		run = run && _messageManager->read(&_me.silenceCooldown);
+		run = run && _messageManager->read(&_me.mineCooldown);
+		_messageManager->readIgnore();
 
 
 		std::string sonarResult;
-		messageManager->read(&sonarResult);
-		messageManager->readIgnore();
-		//std::cin >> sonarResult;
-		//std::cin.ignore();
+		run = run && _messageManager->read(&sonarResult);
+		_messageManager->readIgnore();
 
 		std::string opponentOrders;
-		//std::getline(std::cin, opponentOrders);
-		messageManager->read(&opponentOrders);
+		run = run && _messageManager->read(&opponentOrders);
 
 		// TODO use sonar
 		//std::cerr << "sonarResult" << sonarResult << std::endl;
@@ -91,44 +96,99 @@ void AI::start()
 
 
 
+		//_messageManager->snapshot("gridAccess" + std::to_string(_me.id), gridAccess);
 
+		if (run)
+		{
+			_messageManager->send("MOVE N TORPEDO");
+		}
+	} while (run);
+	_messageManager->debug("AI stopped.");
+}
 
-		messageManager->send("MOVE N TORPEDO");
-		//std::cout << "MOVE N TORPEDO" << std::endl;
-	}
+void AI::stop()
+{
+#ifdef LIBRARY
+	_mutex.lock();
+	_stop = true;
+	_mutex.unlock();
+#endif
 }
 
 void AI::calculateGridAccess()
 {
-	gridAccess.emptyCopy(grid);
-	//gridAccess.reverse();
+	_gridAccess.emptyCopy(_grid);
 
-	for (int h = 0; h < grid.height; h++)
+	for (int h = 0; h < _grid.height; h++)
 	{
-		for (int w = 0; w < grid.width; w++)
+		for (int w = 0; w < _grid.width; w++)
 		{
 			int access = 0;
-			if (h > 0 && grid[h - 1][w] == 0)
+			if (_grid[h][w] == 0)
 			{
-				access++;
+				access += ((h > 0) && (_grid[h - 1][w] == 0)) ? 1 : 0;
+				access += ((h < _grid.height - 1) && (_grid[h + 1][w] == 0)) ? 1 : 0;
+				access += ((w > 0) && (_grid[h][w - 1] == 0)) ? 1 : 0;
+				access += ((w < _grid.width - 1) && (_grid[h][w + 1] == 0)) ? 1 : 0;
 			}
-			if (h < grid.height && grid[h + 1][w] == 0)
-			{
-				access++;
-			}
-
-			if (w > 0 && grid[h][w - 1] == 0)
-			{
-				access++;
-			}
-			if (w < grid.width && grid[h][w + 1] == 0)
-			{
-				access++;
-			}
-
-			gridAccess[h][w] = (access > 1) ? access : 0;
+			_gridAccess[h][w] = access;
 		}
 	}
+}
+
+void AI::calculatePaths()
+{
+	Grid grid;
+	grid.emptyCopy(_grid);
+
+	int group = 1;
+	for (int y = 0; y < _grid.height; y++)
+	{
+		for (int x = 0; x < _grid.width; x++)
+		{
+			if (calculatePaths(grid, group, x, y) > 0)
+			{
+				group++;
+			}
+		}
+	}
+	_gridPaths.push_back(grid);
+}
+
+int AI::calculatePaths(Grid& grid, int group, int x, int y)
+{
+	int boxCount = 0;
+	if (grid[y][x] == 0 && _gridAccess[y][x] > 0)
+	{
+		grid[y][x] = group;
+		boxCount++;
+
+		if (y > 0)
+		{
+			// Left box.
+			boxCount += calculatePaths(grid, group, x, y - 1);
+		}
+		if (x > 0)
+		{
+			// Right box.
+			boxCount += calculatePaths(grid, group, x - 1, y);
+		}
+		if (y < grid.height - 1)
+		{
+			// Top box.
+			boxCount += calculatePaths(grid, group, x, y + 1);
+		}
+		if (x < grid.width - 1)
+		{
+			// Top box.
+			boxCount += calculatePaths(grid, group, x + 1, y);
+		}
+	}
+	return boxCount;
+}
+
+void AI::calculateUnreachablePath()
+{
 }
 
 void AI::calculateOptimalPath()

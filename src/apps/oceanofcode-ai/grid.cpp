@@ -57,6 +57,17 @@ void Grid::show() const
 	std::cerr << output;
 }
 
+void Grid::fill(int value)
+{
+	for (int h = 0; h < height; h++)
+	{
+		for (int w = 0; w < width; w++)
+		{
+			boxes[h][w] = value;
+		}
+	}
+}
+
 void Grid::fill(int lineNumber, const std::string& lineValue)
 {
 	for (int w = 0; w < lineValue.size(); w++)
@@ -75,10 +86,10 @@ std::string Grid::toLine(int lineNumber) const
 	return line;
 }
 
-void Grid::emptyCopy(const Grid& source)
+void Grid::emptyCopy(const Grid& grid)
 {
-	width = source.width;
-	height = source.height;
+	width = grid.width;
+	height = grid.height;
 	initialize();
 }
 
@@ -113,6 +124,19 @@ short* Grid::operator[](int index) const
 }
 
 void Grid::operator=(const Grid& grid)
+{
+	emptyCopy(grid);
+
+	for (int h = 0; h < height; h++)
+	{
+		for (int w = 0; w < width; w++)
+		{
+			boxes[h][w] = grid[h][w];
+		}
+	}
+}
+
+void Grid::operator=(Grid& grid)
 {
 	emptyCopy(grid);
 

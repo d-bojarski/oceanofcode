@@ -19,9 +19,13 @@ link_directories(../../libraries/oceanofcode-ai-lib)
 
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 find_package(Qt5 COMPONENTS Network REQUIRED)
+find_package(Qt5 COMPONENTS Concurrent REQUIRED)
 add_executable(oceanofcode ${SOURCES})
 target_link_libraries(oceanofcode Qt5::Widgets)
 target_link_libraries(oceanofcode Qt5::Core)
 target_link_libraries(oceanofcode Qt5::Gui)
 target_link_libraries(oceanofcode Qt5::Network)
+target_link_libraries(oceanofcode Qt5::Concurrent)
 target_link_libraries(oceanofcode oceanofcode-ai-lib)
+
+target_compile_definitions(oceanofcode PRIVATE IMAGE_PATH=${MY_VAR})

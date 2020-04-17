@@ -22,11 +22,13 @@ public slots:
 	void process();
 
 signals:
+	void update();
 	void finished();
+	void snapshot(int turnCount, const QString& name, const Grid& grid);
 
 private:
-	void initializePlayer(int id);
-	void play(int id, const std::string& opponentOrders, std::string& playerOrders);
+	bool initializePlayer(int id);
+	bool play(int turnCount, int id, const std::string& opponentOrders, std::string& playerOrders);
 
 public:
 	MessageManager* messageManagerPlayer0;

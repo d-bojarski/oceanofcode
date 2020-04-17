@@ -4,30 +4,52 @@
 #include "player.h"
 #include "grid.h"
 
+#ifdef LIBRARY
+#include <qmutex.h>
+#endif
+
 class AI
 {
 public:
-	AI(MessageManager* messageManager);
+	AI(MessageManager* _messageManager);
 	~AI();
 
 	void start();
+	void stop();
+
 
 	void calculateGridAccess();
-
+	void calculatePaths();
+	int calculatePaths(Grid& grid, int group, int x, int y);
+	void calculateUnreachablePath();
 	void calculateOptimalPath();
 
 private:
-	MessageManager* messageManager;
-	Player me;
-	Player opponent;
+	MessageManager* _messageManager;
+	bool _stop;
+
+	Player _me;
+	Player _opponent;
 
 	// Grid with sea=0 and earth=1.
-	Grid grid;
+	Grid _grid;
 
 	// Grid with access number.
-	Grid gridAccess;
+	Grid _gridAccess;
+	
+	// Grid with all paths.
+	std::vector<Grid> _gridPaths;
 
-	// Grid with path already used
-	Grid gridUsedPath;
+	// Grid with unreachable path.
+	Grid _gridUnreachablePath;
+
+	// Grid with path already used.
+	Grid _gridUsedPath;
+
+
+#ifdef LIBRARY
+	QMutex _mutex;
+#endif
+
 };
 

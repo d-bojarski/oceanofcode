@@ -3,14 +3,16 @@
 //---------------------------------------
 //------- Constructors/Destructors ------
 //---------------------------------------
-MessageManager::MessageManager()
+MessageManager::MessageManager() :
 #ifdef LIBRARY
-	: _mutex(),
+	_mutex(),
 	_waitCondition(),
-	_clientReady(false),
-	_valueString(std::string()),
-	_valueInt(0)
+	_receiverReady(false),
+	_valueString(),
+	_valueInt(0),
 #endif
+	_stop(false),
+	_timeout(1000)
 {
 }
 
@@ -22,83 +24,73 @@ MessageManager::~MessageManager()
 //---- Public methods implementation ----
 //---------------------------------------
 
-void MessageManager::send(const std::string& value)
+bool MessageManager::send(const std::string& value)
 {
 #ifdef LIBRARY
-	_mutex.lock();
-	if (!_clientReady)
+	bool success = true;
+	if (!senderWait())
 	{
-		_waitCondition.wait(&_mutex);
+		debug("MessageManager::send string timeout");
+		success = false;
 	}
-	_clientReady = false;
-	_mutex.unlock();
-
-	_mutex.lock();
-	_valueString = value;
-	//qDebug() << "Send" << value;
-	_mutex.unlock();
-	_waitCondition.wakeAll();
+	else
+	{
+		_mutex.lock();
+		_valueString = value;
+		//qDebug() << "Send" << value;
+		_mutex.unlock();
+		_waitCondition.wakeAll();
+	}
+	return success;
 #else
 	std::cout << value << std::endl;
+	return true;
 #endif
 }
 
-void MessageManager::send(const int value)
+bool MessageManager::send(const int value)
 {
 #ifdef LIBRARY
-	_mutex.lock();
-	if (!_clientReady)
+	bool success = true;
+	if (!senderWait())
 	{
-		//qDebug() << "Client not ready";
-		_waitCondition.wait(&_mutex);
+		debug("MessageManager::send int timeout");
+		success = false;
 	}
-	_clientReady = false;
-	_mutex.unlock();
-
-	_mutex.lock();
-	_valueInt = value;
-	//qDebug() << "Send" << value;
-	_mutex.unlock();
-	_waitCondition.wakeAll();
+	else
+	{
+		_mutex.lock();
+		_valueInt = value;
+		//qDebug() << "Send" << value;
+		_mutex.unlock();
+		_waitCondition.wakeAll();
+	}
+	return success;
+#else
+	std::cout << value << std::endl;
+	return true;
 #endif
 }
 
-void MessageManager::read(std::string* value)
+bool MessageManager::read(std::string* value)
 {
 #ifdef LIBRARY
-	_mutex.lock();
-	_clientReady = true;
-	_mutex.unlock();
-	_waitCondition.wakeAll();
-
-	_mutex.lock();
-	_waitCondition.wait(&_mutex);
-	*value = _valueString;
-	//qDebug() << "Read" << QString::fromStdString(*value);
-	_mutex.unlock();
+	//receiverReady();
+	return receive(value);
 #else
 	std::getline(std::cin, *value);
+	return true;
 #endif
 }
 
-void MessageManager::read(int* value)
+bool MessageManager::read(int* value)
 {
 #ifdef LIBRARY
-	_mutex.lock();
-	//qDebug() << "Client ready";
-	_clientReady = true;
-	_mutex.unlock();
-	_waitCondition.wakeAll();
-
-
-	_mutex.lock();
-	//qDebug() << "Client wait";
-	_waitCondition.wait(&_mutex);
-	*value = _valueInt;
-	//qDebug() << "Read" << *value;
-	_mutex.unlock();
+	//receiverReady();
+	return receive(value);
 #else
 	std::cin >> *value;
+	return true;
 #endif
 }
 
@@ -116,5 +108,94 @@ void MessageManager::debug(const std::string& message)
 	qDebug().noquote() << QString::fromStdString(message);
 #else
 	std::cerr << message << std::endl;
+#endif
+}
+
+void MessageManager::snapshot(const std::string& name, const Grid& grid)
+{
+	snapshots.push_back(Snapshot{ name, grid });
+}
+
+void MessageManager::clearSnapshots()
+{
+	snapshots.clear();
+}
+
+std::vector<Snapshot> MessageManager::getSnapshots()
+{
+	return snapshots;
+}
+
+bool MessageManager::senderWait()
+{
+#ifdef LIBRARY
+	bool success = true;
+	_mutex.lock();
+	if (!_receiverReady)
+	{
+		success = _waitCondition.wait(&_mutex, _timeout);
+	}
+	_receiverReady = false;
+	_mutex.unlock();
+
+	return success;
+#else
+	return false;
+#endif
+}
+
+//void MessageManager::receiverReady()
+//{
+//#ifdef LIBRARY
+//	_mutex.lock();
+//	_receiverReady = true;
+//	_waitCondition.wakeAll();
+//	_mutex.unlock();
+//#endif
+//}
+
+bool MessageManager::receive(int* value)
+{
+#ifdef LIBRARY
+	bool success = true;
+	_mutex.lock();
+	_receiverReady = true;
+	_waitCondition.wakeAll();
+	if (!_waitCondition.wait(&_mutex, _timeout))
+	{
+		debug("MessageManager::receive int timeout");
+		success = false;
+	}
+	else
+	{
+		*value = _valueInt;
+	}
+	_mutex.unlock();
+	return success;
+#else
+	return false;
+#endif
+}
+
+bool MessageManager::receive(std::string* value)
+{
+#ifdef LIBRARY
+	bool success = true;
+	_mutex.lock();
+	_receiverReady = true;
+	_waitCondition.wakeAll();
+	if (!_waitCondition.wait(&_mutex, _timeout))
+	{
+		debug("MessageManager::receive string timeout");
+		success = false;
+	}
+	else
+	{
+		*value = _valueString;
+	}
+	_mutex.unlock();
+	return success;
+#else
+	return false;
 #endif
 }

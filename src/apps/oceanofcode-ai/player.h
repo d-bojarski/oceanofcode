@@ -13,7 +13,6 @@ public:
 		int mineCooldown);
 	~Player();
 
-
 public:
 	int id;
 
