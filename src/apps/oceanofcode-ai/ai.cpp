@@ -20,6 +20,7 @@ AI::AI(MessageManager* _messageManager) :
 
 AI::~AI()
 {
+	_rootNodes.clear();
 }
 
 //---------------------------------------
@@ -39,6 +40,7 @@ void AI::start()
 	_messageManager->debug("_me.id: " + std::to_string(_me.id));
 
 	_grid.initialize();
+	_draftGrid.emptyCopy(_grid);
 
 	for (int h = 0; h < _grid.height; h++)
 	{
@@ -49,12 +51,31 @@ void AI::start()
 	}
 
 	calculateGridAccess();
-	calculatePaths();
-
 	_messageManager->snapshot("grid-access-" + std::to_string(_me.id), _gridAccess);
-	for (int i = 0; i < _gridPaths.size(); i++)
+
+	calculateNodes();
+	_messageManager->snapshot("grid-region-" + std::to_string(_me.id), _gridRegions);
+
+
+	//auto result = std::find_if(_nodeList.begin(), _nodeList.end(), CompareNode(0, 0));
+	//_messageManager->debug((*result)->toString());
+	//result = std::find_if(_nodeList.begin(), _nodeList.end(), CompareNode(1, 0));
+	//_messageManager->debug((*result)->toString());
+	//result = std::find_if(_nodeList.begin(), _nodeList.end(), CompareNode(2, 0));
+	//_messageManager->debug((*result)->toString());
+	//result = std::find_if(_nodeList.begin(), _nodeList.end(), CompareNode(0, 1));
+	//_messageManager->debug((*result)->toString());
+	//result = std::find_if(_nodeList.begin(), _nodeList.end(), CompareNode(1, 1));
+	//_messageManager->debug((*result)->toString());
+	//result = std::find_if(_nodeList.begin(), _nodeList.end(), CompareNode(2, 1));
+	//_messageManager->debug((*result)->toString());
+
+
+	calculatePaths();
+	for (size_t i = 0; i < _paths.size(); i++)
 	{
-		_messageManager->snapshot("grid-path-" + std::to_string(_me.id) + "-" + std::to_string(i), _gridPaths.at(i));
+		_draftGrid.fill(_paths.at(i));
+		_messageManager->snapshot("grid-node-" + std::to_string(_me.id) + "-" + std::to_string(i), _draftGrid);
 	}
 
 	_messageManager->send("7 7");
@@ -136,55 +157,139 @@ void AI::calculateGridAccess()
 	}
 }
 
-void AI::calculatePaths()
+void AI::calculateNodes()
 {
-	Grid grid;
-	grid.emptyCopy(_grid);
+	Node* node = nullptr;
+	_draftGrid.fill(0);
 
 	int group = 1;
+
 	for (int y = 0; y < _grid.height; y++)
 	{
 		for (int x = 0; x < _grid.width; x++)
 		{
-			if (calculatePaths(grid, group, x, y) > 0)
+			node = new Node(x, y);
+			if (calculateNodes(node, group) > 0)
 			{
+				_rootNodes.push_back(node);
 				group++;
+			}
+			else
+			{
+				delete node;
+				node = nullptr;
 			}
 		}
 	}
-	_gridPaths.push_back(grid);
+	_gridRegions = _draftGrid;
 }
 
-int AI::calculatePaths(Grid& grid, int group, int x, int y)
+int AI::calculateNodes(Node* node, int group)
 {
-	int boxCount = 0;
-	if (grid[y][x] == 0 && _gridAccess[y][x] > 0)
-	{
-		grid[y][x] = group;
-		boxCount++;
+	int nodeCount = 0;
+	int x = node->x;
+	int y = node->y;
 
-		if (y > 0)
+	if (_gridAccess[y][x] > 0)
+	{
+		if (_draftGrid[y][x] == 0)
 		{
-			// Left box.
-			boxCount += calculatePaths(grid, group, x, y - 1);
+			_draftGrid[y][x] = group;
+			_nodeList.push_back(node);
+			nodeCount++;
+
+			if (y > 0)
+			{
+				// Left box.
+				Node* child = new Node(x, y - 1);
+				int count = calculateNodes(child, group);
+				if (count > 0)
+				{
+					node->nodes.push_back(child);
+					nodeCount += count;
+				}
+			}
+			if (x > 0)
+			{
+				// Right box.
+				Node* child = new Node(x - 1, y);
+				int count = calculateNodes(child, group);
+				if (count > 0)
+				{
+					node->nodes.push_back(child);
+					nodeCount += count;
+				}
+			}
+			if (y < _draftGrid.height - 1)
+			{
+				// Top box.
+				Node* child = new Node(x, y + 1);
+				int count = calculateNodes(child, group);
+				if (count > 0)
+				{
+					node->nodes.push_back(child);
+					nodeCount += count;
+				}
+			}
+			if (x < _draftGrid.width - 1)
+			{
+				// Top box.
+				Node* child = new Node(x + 1, y);
+				int count = calculateNodes(child, group);
+				if (count > 0)
+				{
+					node->nodes.push_back(child);
+					nodeCount += count;
+				}
+			}
 		}
-		if (x > 0)
+		else
 		{
-			// Right box.
-			boxCount += calculatePaths(grid, group, x - 1, y);
-		}
-		if (y < grid.height - 1)
-		{
-			// Top box.
-			boxCount += calculatePaths(grid, group, x, y + 1);
-		}
-		if (x < grid.width - 1)
-		{
-			// Top box.
-			boxCount += calculatePaths(grid, group, x + 1, y);
+			nodeCount++;
 		}
 	}
-	return boxCount;
+	return nodeCount;
+}
+
+void AI::calculatePaths()
+{
+	for (size_t n = 0; n < 1; n++) // TODO
+	//for (size_t n = 0; n < _nodes.size(); n++)
+	{
+		Path path;
+		calculatePaths(path, _rootNodes.at(n));
+	}
+}
+
+bool AI::calculatePaths(Path& path, const Node* node)
+{
+	const Point& p = node->toPoint();
+
+	if (!path.contains(p))
+	{
+		path.addPoint(p);
+		_messageManager->debug("Add point: " + p.toString() + "----" + path.toString());
+
+		bool end = node->nodes.empty();
+		for (size_t n = 0; n < node->nodes.size(); n++)
+		{
+			//end &= !
+			calculatePaths(Path(path), node->nodes.at(n));
+		}
+		//if (end)
+		//{
+		//	// Store the path unless there are atleast one path possible.
+		//	_messageManager->debug("Store path: " + path.toString());
+		//	_paths.push_back(path);
+		//}
+
+		return true;
+	}
+	else
+	{
+		_messageManager->debug("Removed: " + p.toString() + "----" + path.toString());
+	}
+	return false;
 }
 
 void AI::calculateUnreachablePath()
@@ -198,4 +303,9 @@ void AI::calculateOptimalPath()
 	// SURFACE close to the sector boundary.
 
 	// Biggest motif x9
+}
+
+void AI::debugNodes()
+{
+
 }

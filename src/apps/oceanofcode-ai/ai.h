@@ -3,6 +3,8 @@
 #include "messagemanager.h"
 #include "player.h"
 #include "grid.h"
+#include "node.h"
+#include "path.h"
 
 #ifdef LIBRARY
 #include <qmutex.h>
@@ -19,10 +21,16 @@ public:
 
 
 	void calculateGridAccess();
+	void calculateNodes();
+	int calculateNodes(Node* parentNode, int group);
 	void calculatePaths();
-	int calculatePaths(Grid& grid, int group, int x, int y);
+	bool calculatePaths(Path& path, const Node* node);
+
+
 	void calculateUnreachablePath();
 	void calculateOptimalPath();
+
+	void debugNodes();
 
 private:
 	MessageManager* _messageManager;
@@ -31,14 +39,27 @@ private:
 	Player _me;
 	Player _opponent;
 
+	// Grid used for calculation.
+	Grid _draftGrid;
+
 	// Grid with sea=0 and earth=1.
 	Grid _grid;
 
 	// Grid with access number.
 	Grid _gridAccess;
-	
-	// Grid with all paths.
-	std::vector<Grid> _gridPaths;
+
+	// Grid with all regions (a number by region).
+	Grid _gridRegions;
+
+	// Vector with all nodes.
+	std::vector<Node*> _nodeList;
+	// Vector with all root nodes (linked).
+	std::vector<Node*> _rootNodes;
+
+	// Vector with all paths.
+	std::vector<Path> _paths;
+
+
 
 	// Grid with unreachable path.
 	Grid _gridUnreachablePath;

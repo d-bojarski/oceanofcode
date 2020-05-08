@@ -68,6 +68,16 @@ void Grid::fill(int value)
 	}
 }
 
+void Grid::fill(const Path& path)
+{
+	fill(0);
+	for (size_t i = 0; i < path.size(); i++)
+	{
+		const Point& p = path.at(i);
+		boxes[p.y][p.x] = i;
+	}
+}
+
 void Grid::fill(int lineNumber, const std::string& lineValue)
 {
 	for (int w = 0; w < lineValue.size(); w++)

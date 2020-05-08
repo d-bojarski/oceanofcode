@@ -17,6 +17,10 @@ file(GLOB SOURCES_LIB
     ../../apps/oceanofcode-ai/player.cpp
     ../../apps/oceanofcode-ai/messagemanager.h
     ../../apps/oceanofcode-ai/messagemanager.cpp
+    ../../apps/oceanofcode-ai/node.h
+    ../../apps/oceanofcode-ai/node.cpp
+    ../../apps/oceanofcode-ai/path.h
+    ../../apps/oceanofcode-ai/path.cpp
 )
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 find_package(Qt5 COMPONENTS Network REQUIRED)

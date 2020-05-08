@@ -2,6 +2,7 @@
 
 #include <string>
 #include "player.h"
+#include "path.h"
 
 class Grid
 {
@@ -15,6 +16,7 @@ public:
 	void show() const;
 
 	void fill(int value);
+	void fill(const Path& path);
 	// Fill ground position.
 	void fill(int lineNumber, const std::string& lineValue);
 	std::string toLine(int lineNumber) const;
